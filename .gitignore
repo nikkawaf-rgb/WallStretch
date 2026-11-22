@@ -1,0 +1,12 @@
+# build output
+*.exe
+*.pdb
+*.user
+*.suo
+
+# release artifacts
+dist/
+*.zip
+
+# runtime logs
+error.log
