@@ -1,85 +1,84 @@
-﻿# WallStretch
+# WallStretch
 
-Приложение для Windows: раскладывает одну картинку по нескольким мониторам, показывает,
-как она реально ляжет на каждый экран, и даёт двигать/масштабировать картинку и подгонять
-положение каждого монитора. Обои ставятся на каждый экран отдельно — попиксельно, без растягивания.
+**English** · [Русский](README.ru.md)
+
+Multi-monitor wallpaper composer for Windows: arrange, scale and align one image across several
+screens, see exactly how it lands on each monitor, and apply it with one click.
 
 Windows 10/11 · .NET Framework 4.x · MIT
 
-![WallStretch](screenshots/main.jpg)
+![WallStretch](screenshots/main-en.jpg)
 
-## Запуск
+## Features
 
-`WallStretch.exe` — можно закрепить на панели задач или положить ярлык на рабочий стол.
+- **Live preview** of the real desktop: monitors in their true proportions and positions.
+- **Paste a picture** from the clipboard (`Ctrl+V`), open a file, or drag & drop it into the window.
+- **Zoom**: mouse wheel (around the cursor), `−` / `+` buttons, click the percentage to reset to 1:1.
+- **Move the image** with the mouse or arrow keys (`Shift` = 10 px).
+- **Move a monitor up/down** with the `⋯` grip at the top of the screen — so the picture matches the
+  real physical height of your monitors. Double-click the grip to reset.
+- **Exclude monitors** from the panorama: excluded screens are left untouched, the workspace shrinks
+  to the remaining ones.
+- **Wallpapers per monitor** (`IDesktopWallpaper`): pixel-exact, no stretching, works with mixed DPI
+  (tested on a 4K TV at 300 % scaling).
+- **Export** per-monitor images to a folder.
+- **Interface: English / Russian** (English by default) — switch with `EN` / `RU` at the bottom right.
+- The selected screens, offsets and language are remembered between runs.
 
-Требования: Windows 10/11, .NET Framework 4.x (есть в системе по умолчанию).
+## Install
 
-## Как пользоваться
+1. Download `WallStretch-1.x.zip` from [Releases](https://github.com/nikkawaf-rgb/WallStretch/releases) and unpack it.
+2. Run `WallStretch.exe`.
 
-1. **Добавить картинку** — `Ctrl+V` из буфера, кнопка «Вставить», «Открыть…» или перетащите файл в окно.
-2. В центре — **рабочий стол**: прямоугольники мониторов в их реальных пропорциях и положении.
-3. **Двигать картинку** — тянуть мышью. **Масштаб** — колесо мыши (зумит вокруг курсора) или кнопки
-   `−` / `+` в панели; в окошке между ними показан текущий масштаб, клик по нему — вернуть 1:1.
-4. **Сдвинуть монитор по вертикали** — потяните за «ручку» `⋯` сверху экрана. Так картинка
-   подгоняется под реальное расположение мониторов (например, если AOC стоит ниже LG).
-   Двойной клик по ручке — сброс сдвига в ноль. Сдвиг виден в подписи экрана (`+40`).
-5. Быстрые режимы: **Заполнить** (двойной клик), **По ширине**, **1:1**.
-6. **Применить обои** — для каждого включённого монитора собирается своя картинка точно в его
-   разрешении и ставится через системный API (IDesktopWallpaper). Исключённые мониторы не трогаются.
+Requires Windows 10/11 with .NET Framework 4.x (already included in Windows).
 
-## Исключение мониторов
+## Usage
 
-Внизу окна — строка **«Панорама на:»** с кнопками-экранами. Клик по экрану исключает его из
-панорамы (крестик, кнопка гаснет), повторный клик возвращает.
+1. Add a picture (`Ctrl+V`, “Paste”, “Open…”, or drag & drop).
+2. The preview shows your desktop: monitor frames over the image.
+3. Drag the image, zoom with the wheel, use **Fill** / **Fit width** / **1:1** for quick presets.
+4. If a screen sits lower or higher than its frame, drag its `⋯` grip up/down until the picture lines up.
+5. Press **Apply wallpaper** — each included monitor gets its own pixel-exact image.
 
-- Рабочая область сжимается до оставшихся экранов: например, LG + AOC = **4480×1440**.
-- Исключённый монитор **не трогается** — на нём остаются те обои, что были.
-- Минимум один экран должен остаться включённым.
-- Выбор и сдвиги запоминаются между запусками (`settings.ini` в `%LOCALAPPDATA%\WallStretch`).
+## Keyboard shortcuts
 
-![Исключение монитора](screenshots/exclude.jpg)
-
-## Горячие клавиши
-
-| Клавиши | Действие |
+| Keys | Action |
 | --- | --- |
-| `Ctrl+V` | вставить картинку из буфера |
-| `Ctrl+O` | открыть файл |
-| `Ctrl+S` | экспортировать картинки по мониторам в папку |
-| стрелки | сдвиг картинки на 1 пиксель |
-| `Shift` + стрелки | сдвиг на 10 пикселей |
-| колесо мыши | масштаб картинки |
-| двойной клик по картинке | «Заполнить» |
-| двойной клик по ручке монитора | сбросить сдвиг экрана |
+| `Ctrl+V` | paste an image from the clipboard |
+| `Ctrl+O` | open a file |
+| `Ctrl+S` | export per-monitor images to a folder |
+| arrows | move the image by 1 px |
+| `Shift` + arrows | move the image by 10 px |
+| mouse wheel | zoom the image |
+| double-click the image | “Fill” |
+| double-click a monitor grip | reset that screen's vertical offset |
 
-## Как это работает
+## How it works
 
-- Для каждого монитора рендерится отдельная картинка ровно его размера (например 2560×1440),
-  в которой лежит нужный кусок изображения с учётом сдвига этого экрана.
-- Картинки ставятся через `IDesktopWallpaper.SetWallpaper` — Windows рисует их 1:1 в физических
-  пикселях, поэтому нет ни растягивания, ни обрезки. Проверено и на ТВ с масштабом 300 %.
-- Сдвиг монитора меняет то, какой кусок картинки попадает на этот экран: потянули экран вниз на
-  60 px — картинка на нём поднялась ровно на 60 px (проверено скриншотами).
-- «Применить обои» создаёт COM-объект заранее и выполняет работу вне обработчика клика — иначе
-  Windows может отказать с ошибкой `RPC_E_CANTCALLOUT_ININPUTSYNCCALL`.
+- For every monitor an image of exactly its physical size is rendered (e.g. 2560×1440) with the
+  required part of the picture, taking that screen's vertical offset into account.
+- The images are applied through `IDesktopWallpaper.SetWallpaper`, so Windows draws them 1:1 in
+  physical pixels — no stretching, no cropping.
+- Dragging a screen down by 60 px shifts the picture on it up by exactly 60 px (verified with
+  screenshots).
 
-## Командная строка
+## Command line
 
 ```
-WallStretch.exe --list                          список мониторов
-WallStretch.exe --render in.jpg out.jpg         собрать общий кадр без запуска окна
-WallStretch.exe --apply in.jpg                  растянуть на весь рабочий стол (Span)
+WallStretch.exe --list                          list monitors
+WallStretch.exe --render in.jpg out.jpg         render the whole desktop without opening the window
+WallStretch.exe --apply in.jpg                  stretch across the whole desktop (Span)
 ```
 
-## Сборка
+## Build
 
 ```
 powershell -ExecutionPolicy Bypass -File build.ps1
 ```
 
-Компилятор — `csc.exe` из .NET Framework 4.x, внешних зависимостей и NuGet нет.
+Uses `csc.exe` from .NET Framework 4.x — no NuGet, no external dependencies. Every `v*` tag is built
+and published automatically by GitHub Actions (`.github/workflows/build.yml`).
 
-## Ограничения
+## License
 
-- «Применить обои» меняет обои только на включённых мониторах; исключённые остаются как были.
-- Форматы картинок — всё, что понимает GDI+: JPG, PNG, BMP, GIF.
+MIT — see [LICENSE](LICENSE).

@@ -47,6 +47,10 @@ namespace WallStretch
         private Panel _chipPanel;
         private Label _status;
         private Label _zoomLabel;
+        private Label _subtitle;
+        private Label _stripLabel;
+        private Button _btnLangEn;
+        private Button _btnLangRu;
         private readonly List<Button> _chipButtons = new List<Button>();
         private ToolTip _tip;
 
@@ -78,7 +82,7 @@ namespace WallStretch
 
         public MainForm(string initialImage)
         {
-            Text = "WallStretch — обои на несколько мониторов";
+            Text = "WallStretch";
             BackColor = Bg;
             ForeColor = TextMain;
             Font = new Font("Segoe UI", 9f);
@@ -100,6 +104,7 @@ namespace WallStretch
             BuildStage();
             BuildMonitorStrip();
             BuildStatus();
+            ApplyLanguage();
 
             DragEnter += OnDragEnter;
             DragDrop += OnDragDrop;
@@ -183,6 +188,11 @@ namespace WallStretch
                         string device = line.Substring(8).Trim();
                         foreach (var m in _monitors) if (m.Device == device) m.Included = false;
                     }
+                    else if (line.StartsWith("lang=", StringComparison.Ordinal))
+                    {
+                        string value = line.Substring(5).Trim();
+                        Loc.Set(value == "ru" ? Loc.Russian : Loc.English);
+                    }
                     else if (line.StartsWith("offset=", StringComparison.Ordinal))
                     {
                         string rest = line.Substring(7);
@@ -206,6 +216,7 @@ namespace WallStretch
             try
             {
                 var lines = new List<string>();
+                lines.Add("lang=" + (Loc.Lang == Loc.Russian ? "ru" : "en"));
                 foreach (var m in _monitors)
                 {
                     if (!m.Included) lines.Add("exclude=" + m.Device);
@@ -240,26 +251,26 @@ namespace WallStretch
             title.BackColor = Color.Transparent;
             _top.Controls.Add(title);
 
-            var subtitle = new Label();
-            subtitle.Text = "панорама на несколько мониторов";
-            subtitle.Font = new Font("Segoe UI", 8.5f);
-            subtitle.ForeColor = TextMuted;
-            subtitle.AutoSize = true;
-            subtitle.Location = new Point(22, 38);
-            subtitle.BackColor = Color.Transparent;
-            _top.Controls.Add(subtitle);
+            _subtitle = new Label();
+            _subtitle.Text = Loc.T("app.subtitle");
+            _subtitle.Font = new Font("Segoe UI", 8.5f);
+            _subtitle.ForeColor = TextMuted;
+            _subtitle.AutoSize = true;
+            _subtitle.Location = new Point(22, 38);
+            _subtitle.BackColor = Color.Transparent;
+            _top.Controls.Add(_subtitle);
 
-            _btnPaste = MakeButton("Вставить", 100, false);
+            _btnPaste = MakeButton(Loc.T("btn.paste"), 100, false);
             _btnPaste.Click += delegate { PasteImage(); };
-            _btnOpen = MakeButton("Открыть…", 100, false);
+            _btnOpen = MakeButton(Loc.T("btn.open"), 100, false);
             _btnOpen.Click += delegate { OpenImage(); };
-            _btnCover = MakeButton("Заполнить", 100, false);
+            _btnCover = MakeButton(Loc.T("btn.fill"), 100, false);
             _btnCover.Click += delegate { FitCover(); };
-            _btnWidth = MakeButton("По ширине", 100, false);
+            _btnWidth = MakeButton(Loc.T("btn.width"), 100, false);
             _btnWidth.Click += delegate { FitWidth(); };
-            _btnOne = MakeButton("1:1", 56, false);
+            _btnOne = MakeButton(Loc.T("btn.one"), 56, false);
             _btnOne.Click += delegate { FitOneToOne(); };
-            _btnExport = MakeButton("Экспорт…", 100, false);
+            _btnExport = MakeButton(Loc.T("btn.export"), 100, false);
             _btnExport.Click += delegate { Export(); };
 
             _btnZoomOut = MakeButton("−", 32, false);
@@ -278,12 +289,12 @@ namespace WallStretch
             _zoomLabel.Cursor = Cursors.Hand;
             _zoomLabel.Click += delegate { FitOneToOne(); };
             _tip = new ToolTip();
-            _tip.SetToolTip(_zoomLabel, "Масштаб картинки. Клик — вернуть 1:1");
+            _tip.SetToolTip(_zoomLabel, Loc.T("tip.zoom"));
 
-            _btnRefresh = MakeButton("Экраны", 92, false);
+            _btnRefresh = MakeButton(Loc.T("btn.monitors"), 92, false);
             _btnRefresh.Click += delegate { RefreshScreens(); };
 
-            _btnApply = MakeButton("Применить обои", 168, true);
+            _btnApply = MakeButton(Loc.T("btn.apply"), 168, true);
             _btnApply.Click += delegate { ApplyWallpaper(); };
 
             _top.Controls.Add(_btnPaste);
@@ -375,16 +386,22 @@ namespace WallStretch
             };
             Controls.Add(_chipPanel);
 
-            var label = new Label();
-            label.Text = "Панорама на:";
-            label.AutoSize = true;
-            label.Location = new Point(20, 15);
-            label.ForeColor = TextMuted;
-            label.Font = new Font("Segoe UI", 8.5f);
-            label.BackColor = Color.Transparent;
-            _chipPanel.Controls.Add(label);
+            _stripLabel = new Label();
+            _stripLabel.Text = Loc.T("strip.title");
+            _stripLabel.AutoSize = true;
+            _stripLabel.Location = new Point(20, 15);
+            _stripLabel.ForeColor = TextMuted;
+            _stripLabel.Font = new Font("Segoe UI", 8.5f);
+            _stripLabel.BackColor = Color.Transparent;
+            _chipPanel.Controls.Add(_stripLabel);
 
-            _tip.SetToolTip(label, "Нажмите на экран, чтобы исключить его из панорамы или вернуть обратно");
+            _tip.SetToolTip(_stripLabel, Loc.T("tip.panorama"));
+
+            _btnLangEn = MakeLangButton("EN", Loc.English);
+            _btnLangRu = MakeLangButton("RU", Loc.Russian);
+            _chipPanel.Controls.Add(_btnLangEn);
+            _chipPanel.Controls.Add(_btnLangRu);
+            _chipPanel.Resize += delegate { LayoutLangButtons(); };
 
             RebuildChips();
         }
@@ -400,6 +417,84 @@ namespace WallStretch
             _status.Padding = new Padding(18, 0, 18, 0);
             _status.Font = new Font("Segoe UI", 8.5f);
             Controls.Add(_status);
+        }
+
+        private Button MakeLangButton(string text, int lang)
+        {
+            var b = new Button();
+            b.Text = text;
+            b.Width = 40;
+            b.Height = 26;
+            b.FlatStyle = FlatStyle.Flat;
+            b.FlatAppearance.BorderSize = 1;
+            b.Font = new Font("Segoe UI", 8.5f);
+            b.Cursor = Cursors.Hand;
+            b.TabStop = false;
+            b.UseVisualStyleBackColor = false;
+
+            int value = lang;
+            b.Click += delegate
+            {
+                if (Loc.Lang == value) return;
+                Loc.Set(value);
+                SaveSettings();
+                ApplyLanguage();
+            };
+
+            _tip.SetToolTip(b, Loc.T("tip.lang"));
+            return b;
+        }
+
+        private void LayoutLangButtons()
+        {
+            if (_btnLangEn == null || _btnLangRu == null) return;
+            int right = _chipPanel.ClientSize.Width - 16;
+            _btnLangRu.SetBounds(right - 44, 10, 40, 26);
+            _btnLangEn.SetBounds(right - 88, 10, 40, 26);
+        }
+
+        private void UpdateLangButtons()
+        {
+            if (_btnLangEn == null || _btnLangRu == null) return;
+            StyleLang(_btnLangEn, Loc.Lang == Loc.English);
+            StyleLang(_btnLangRu, Loc.Lang == Loc.Russian);
+        }
+
+        private static void StyleLang(Button b, bool active)
+        {
+            b.BackColor = active ? Color.FromArgb(58, 48, 34) : Color.FromArgb(30, 30, 38);
+            b.ForeColor = active ? Accent : TextMuted;
+            b.FlatAppearance.BorderColor = active ? Color.FromArgb(140, 110, 60) : Color.FromArgb(44, 44, 54);
+            b.FlatAppearance.MouseOverBackColor = active ? Color.FromArgb(70, 58, 40) : Color.FromArgb(38, 38, 46);
+        }
+
+        private void ApplyLanguage()
+        {
+            UpdateTitle();
+            _subtitle.Text = Loc.T("app.subtitle");
+            _btnPaste.Text = Loc.T("btn.paste");
+            _btnOpen.Text = Loc.T("btn.open");
+            _btnCover.Text = Loc.T("btn.fill");
+            _btnWidth.Text = Loc.T("btn.width");
+            _btnOne.Text = Loc.T("btn.one");
+            _btnExport.Text = Loc.T("btn.export");
+            _btnRefresh.Text = Loc.T("btn.monitors");
+            _btnApply.Text = Loc.T("btn.apply");
+            _stripLabel.Text = Loc.T("strip.title");
+            _tip.SetToolTip(_zoomLabel, Loc.T("tip.zoom"));
+            _tip.SetToolTip(_stripLabel, Loc.T("tip.panorama"));
+            UpdateLangButtons();
+            RebuildChips();
+            LayoutLangButtons();
+            UpdateStatus();
+            if (_stage != null) _stage.Invalidate();
+        }
+
+        private void UpdateTitle()
+        {
+            Text = string.IsNullOrEmpty(_imageName)
+                ? "WallStretch — " + Loc.T("app.subtitle")
+                : "WallStretch — " + _imageName;
         }
 
         private void RebuildChips()
@@ -437,7 +532,7 @@ namespace WallStretch
 
                 var monitor = m;
                 b.Click += delegate { ToggleMonitor(monitor); };
-                _tip.SetToolTip(b, on ? "Нажмите, чтобы исключить экран" : "Нажмите, чтобы вернуть экран");
+                _tip.SetToolTip(b, on ? Loc.T("tip.chip.on") : Loc.T("tip.chip.off"));
 
                 _chipPanel.Controls.Add(b);
                 _chipButtons.Add(b);
@@ -538,7 +633,7 @@ namespace WallStretch
                     var fmt = new StringFormat();
                     fmt.Alignment = StringAlignment.Center;
                     fmt.LineAlignment = StringAlignment.Center;
-                    g.DrawString("Перетащите изображение сюда\r\nили нажмите Ctrl+V / «Открыть»", font, brush, stageRect, fmt);
+                    g.DrawString(Loc.T("hint.empty"), font, brush, stageRect, fmt);
                 }
             }
 
@@ -816,7 +911,7 @@ namespace WallStretch
                     if (files.Count > 0) { LoadImage(files[0]); return; }
                 }
 
-                MessageBox.Show(this, "В буфере обмена нет картинки.", "WallStretch",
+                MessageBox.Show(this, Loc.T("msg.noClipboard"), "WallStretch",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
@@ -829,8 +924,8 @@ namespace WallStretch
         {
             using (var dlg = new OpenFileDialog())
             {
-                dlg.Title = "Выберите изображение для обоев";
-                dlg.Filter = "Изображения|*.jpg;*.jpeg;*.png;*.bmp;*.gif|Все файлы|*.*";
+                dlg.Title = Loc.T("dlg.open.title");
+                dlg.Filter = Loc.T("dlg.open.filter");
                 if (dlg.ShowDialog(this) == DialogResult.OK)
                 {
                     try { LoadImage(dlg.FileName); }
@@ -883,7 +978,7 @@ namespace WallStretch
             _image = bmp;
             _preview = MakePreview(bmp, 3200);
             _imageName = name;
-            Text = "WallStretch — " + name;
+            UpdateTitle();
 
             FitCover();
             _stage.Invalidate();
@@ -952,7 +1047,7 @@ namespace WallStretch
 
             using (var dlg = new FolderBrowserDialog())
             {
-                dlg.Description = "Куда сохранить картинки для каждого монитора";
+                dlg.Description = Loc.T("dlg.export.title");
                 if (dlg.ShowDialog(this) != DialogResult.OK) return;
 
                 try
@@ -968,7 +1063,7 @@ namespace WallStretch
                             Wallpaper.SaveJpeg(bmp, file, 92);
                         }
                     }
-                    _status.Text = "Сохранено в " + dlg.SelectedPath;
+                    _status.Text = Loc.F("status.saved", dlg.SelectedPath);
                 }
                 catch (Exception ex) { ShowError(ex); }
                 finally { Cursor = Cursors.Default; }
@@ -1011,7 +1106,7 @@ namespace WallStretch
 
             _applying = true;
             _btnApply.Enabled = false;
-            _status.Text = "Собираю и применяю обои…";
+            _status.Text = Loc.T("status.applying");
             _status.Refresh();
 
             // Do the COM work outside of the click handler: inside an input-synchronous
@@ -1035,7 +1130,7 @@ namespace WallStretch
                 List<string> files = Wallpaper.ApplyPerMonitor(images);
                 foreach (var mi in images) mi.Bitmap.Dispose();
 
-                _status.Text = "Готово: обои применены на " + files.Count + " экран(а)";
+                _status.Text = Loc.F("status.applied", files.Count);
             }
             catch (Exception ex)
             {
@@ -1054,15 +1149,15 @@ namespace WallStretch
             string text = ex.Message;
             if (text.IndexOf("8001010D", StringComparison.OrdinalIgnoreCase) >= 0)
             {
-                text = "Windows был занят синхронной операцией. Нажмите «Применить обои» ещё раз.";
+                text = Loc.T("msg.busy");
             }
-            MessageBox.Show(this, "Не удалось применить обои.\n\n" + text, "WallStretch",
+            MessageBox.Show(this, Loc.F("msg.applyFailed", text), "WallStretch",
                 MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
 
         private void NeedImage()
         {
-            MessageBox.Show(this, "Сначала вставьте или откройте изображение.", "WallStretch",
+            MessageBox.Show(this, Loc.T("msg.needImage"), "WallStretch",
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
@@ -1071,17 +1166,17 @@ namespace WallStretch
             if (_status == null || _monitors == null) return;
 
             int included = CountIncluded();
-            string monitors = "Экранов: " + included + " из " + _monitors.Count +
-                              " · область " + _area.Width + "×" + _area.Height;
+            string monitors = Loc.F("status.screens", included, _monitors.Count) +
+                              " · " + Loc.F("status.area", _area.Width, _area.Height);
 
             string image;
             if (_image != null)
             {
-                image = " · картинка " + _image.Width + "×" + _image.Height;
+                image = " · " + Loc.F("status.image", _image.Width, _image.Height);
             }
             else
             {
-                image = " · вставьте картинку (Ctrl+V) или перетащите файл";
+                image = " · " + Loc.T("status.hint");
             }
 
             string excluded = string.Empty;
@@ -1089,7 +1184,7 @@ namespace WallStretch
             {
                 var names = new List<string>();
                 foreach (var m in _monitors) if (!m.Included) names.Add(m.Name);
-                excluded = " · вне панорамы: " + string.Join(", ", names.ToArray());
+                excluded = " · " + Loc.F("status.excluded", string.Join(", ", names.ToArray()));
             }
 
             _status.Text = monitors + image + excluded;

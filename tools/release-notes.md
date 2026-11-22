@@ -1,36 +1,32 @@
-## WallStretch 1.0.0
+## WallStretch 1.1.0
 
-Первая версия приложения для раскладки одной картинки по нескольким мониторам.
+### What's new
 
-### Возможности
+- **English / Russian interface** with an in-app switcher (`EN` / `RU`, bottom right). English is the
+  default; the choice is remembered.
+- **GitHub Actions** (`.github/workflows/build.yml`): every `v*` tag is built and published
+  automatically, `main` builds are available as artifacts.
+- **README**: English first, Russian in [README.ru.md](README.ru.md).
 
-- **Живой предпросмотр** реального рабочего стола: мониторы в настоящих пропорциях и положении.
-- **Вставка картинки** из буфера (`Ctrl+V`), открытие файла или перетаскивание в окно.
-- **Масштаб**: колесо мыши (вокруг курсора), кнопки `−` / `+`, клик по проценту — вернуть 1:1.
-- **Перемещение картинки** мышью и стрелками (`Shift` — по 10 px).
-- **Сдвиг монитора по вертикали** — ручка `⋯` сверху экрана, чтобы картинка совпала с реальным
-  расположением мониторов; двойной клик по ручке — сброс.
-- **Исключение мониторов** из панорамы: исключённые экраны не трогаются, на них остаются прежние обои.
-- **Обои на каждый монитор отдельно** (IDesktopWallpaper) — пиксель-в-пиксель, без растягивания,
-  работает и при разном масштабе DPI (проверено на ТВ с 300 %).
-- **Экспорт** картинок по мониторам в папку.
-- Запоминание выбранных экранов и сдвигов между запусками.
+### Install
 
-### Установка
+Download `WallStretch-1.1.0.zip` below, unpack it and run `WallStretch.exe`.
+Windows 10/11, .NET Framework 4.x (already in the system).
 
-1. Скачайте `WallStretch-1.0.0.zip` и распакуйте в любую папку.
-2. Запустите `WallStretch.exe`.
+### Русский
 
-Требования: Windows 10/11, .NET Framework 4.x (уже входит в систему).
+- **Интерфейс на английском и русском** с переключателем `EN` / `RU` в правом нижнем углу.
+  По умолчанию английский, выбор запоминается.
+- **GitHub Actions**: каждый тег `v*` собирается и публикуется автоматически.
+- **README**: сначала английский, русский — в [README.ru.md](README.ru.md).
 
-### Сборка из исходников
+Установка: скачайте `WallStretch-1.1.0.zip`, распакуйте и запустите `WallStretch.exe`.
+Windows 10/11, .NET Framework 4.x.
 
-```
-powershell -ExecutionPolicy Bypass -File build.ps1
-```
+---
 
-Компилятор — `csc.exe` из .NET Framework 4.x, без NuGet и внешних зависимостей.
+**Full changelog / Полный список изменений:**
 
-### Лицензия
-
-MIT.
+- English/Russian localization, switcher, saved language.
+- CI: build on push, release on tag.
+- Docs split: README.md (EN) + README.ru.md (RU).
